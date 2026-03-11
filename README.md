@@ -1,7 +1,7 @@
 # CS361-Team31-Task-Tagging-Microservice
 
 Task Tagging microservice for CS361 Team 31.  
-Provides task tagging and tag-based filtering via REST API using JSON.
+Provides task tagging and tag filtering functionality via REST API using JSON.
 
 ---
 
@@ -11,9 +11,9 @@ This microservice allows a client to:
 
 - Add a tag to a task.
 - Remove a tag from a task.
-- Retrieve tasks filtered by one or more tags.
+- Retrieve tasks that contain specific tags.
 
-Tags are stored as simple strings and are returned in lowercase.
+Tags are normalized to lowercase to maintain consistency.
 
 The service communicates exclusively via HTTP POST requests using JSON.
 
@@ -36,7 +36,7 @@ python app.py
 The service runs on:
 
 ```
-http://127.0.0.1:5000
+http://127.0.0.1:5002
 ```
 
 ---
@@ -48,7 +48,7 @@ All requests must:
 - Include header: `Content-Type: application/json`
 - Include a JSON body
 
-### POST /add_tag
+### POST /add-tag
 
 Required JSON fields:
 - `task_id` (string)
@@ -57,14 +57,14 @@ Required JSON fields:
 Example request:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/add_tag \
+curl -X POST http://127.0.0.1:5002/add-tag \
 -H "Content-Type: application/json" \
--d "{\"task_id\":\"task1\",\"tag\":\"birthday\"}"
+-d "{\"task_id\":\"task1\",\"tag\":\"school\"}"
 ```
 
 ---
 
-### POST /remove_tag
+### POST /remove-tag
 
 Required JSON fields:
 - `task_id` (string)
@@ -73,25 +73,25 @@ Required JSON fields:
 Example request:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/remove_tag \
+curl -X POST http://127.0.0.1:5002/remove-tag \
 -H "Content-Type: application/json" \
--d "{\"task_id\":\"task1\",\"tag\":\"birthday\"}"
+-d "{\"task_id\":\"task1\",\"tag\":\"school\"}"
 ```
 
 ---
 
-### POST /filter_by_tags
+### POST /filter-by-tags
 
 Required JSON fields:
-- `tasks` (array of objects containing `task_id` and `tags`)
-- `tags` (array of strings)
+- `tasks` (array of task objects containing `task_id`, `title`, and `tags`)
+- `tags` (array of required tags)
 
 Example request:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/filter_by_tags \
+curl -X POST http://127.0.0.1:5002/filter-by-tags \
 -H "Content-Type: application/json" \
--d "{\"tasks\":[{\"task_id\":\"task1\",\"tags\":[\"birthday\",\"family\"]}],\"tags\":[\"birthday\"]}"
+-d "{\"tags\":[\"school\"],\"tasks\":[{\"task_id\":\"task1\",\"title\":\"Task A\",\"tags\":[\"school\",\"urgent\"]}]}"
 ```
 
 ---
@@ -100,14 +100,15 @@ curl -X POST http://127.0.0.1:5000/filter_by_tags \
 
 All responses are returned in JSON format.
 
-### /add_tag responses
+### /add-tag responses
 
 Success (200 OK):
 
 ```json
 {
   "status": "success",
-  "message": "Tag added"
+  "task_id": "task1",
+  "tags": ["school"]
 }
 ```
 
@@ -122,27 +123,28 @@ Failure (400 Bad Request):
 
 ---
 
-### /remove_tag responses
+### /remove-tag responses
 
 Success (200 OK):
 
 ```json
 {
   "status": "success",
-  "message": "Tag removed"
+  "task_id": "task1",
+  "tags": []
 }
 ```
 
 ---
 
-### /filter_by_tags responses
+### /filter-by-tags responses
 
 Success (200 OK):
 
 ```json
 {
   "status": "success",
-  "filtered_tasks": []
+  "tasks": []
 }
 ```
 
@@ -161,7 +163,7 @@ python app.py
 2. In a separate terminal, run:
 
 ```bash
-python test_client_tagging.py
+python test_task_tagging.py
 ```
 
-The test program sends POST requests to `/add_tag`, `/remove_tag`, and `/filter_by_tags` and prints the JSON responses returned by the microservice.
+The test program sends POST requests to `/add-tag`, `/remove-tag`, and `/filter-by-tags` and prints the JSON responses returned by the microservice.
